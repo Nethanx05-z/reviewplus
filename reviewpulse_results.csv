@@ -1,0 +1,73 @@
+review_id,aspect,segment,score,sentiment
+1,battery,The battery lasts two days,0.361,Positive
+1,camera,the camera is disappointing,-0.494,Negative
+2,price,"Great price, fast delivery, and the screen is gorgeous",0.891,Positive
+2,delivery,"Great price, fast delivery, and the screen is gorgeous",0.891,Positive
+2,screen,"Great price, fast delivery, and the screen is gorgeous",0.891,Positive
+3,camera,"Camera is blurry in low light, battery drains quickly",-0.844,Negative
+3,battery,"Camera is blurry in low light, battery drains quickly",-0.844,Negative
+4,screen,Amazing display and the sound is crisp and loud,0.807,Positive
+4,sound,Amazing display and the sound is crisp and loud,0.807,Positive
+5,delivery,Delivery was late and the packaging was damaged,-0.778,Negative
+5,packaging,Delivery was late and the packaging was damaged,-0.778,Negative
+6,price,"Excellent value for money, totally worth the price",0.855,Positive
+7,battery,The battery easily lasts a full day and charging is fast,0.751,Positive
+8,camera,"Terrible camera, photos look blurry and washed out",-0.765,Negative
+9,screen,Screen is bright and vibrant,0.751,Positive
+9,sound,the speaker sounds tinny,-0.459,Negative
+10,customer service,Customer service was helpful and resolved my issue quickly,0.542,Positive
+10,issue,Customer service was helpful and resolved my issue quickly,0.542,Positive
+11,build quality,The phone feels sturdy and the build quality is great,0.823,Positive
+12,performance,"Overpriced for what you get, the performance is sluggish",-0.791,Negative
+13,performance,Performance is smooth and the software is easy to use,0.727,Positive
+13,software,Performance is smooth and the software is easy to use,0.727,Positive
+14,battery,"Battery drains fast when gaming, and the phone overheats",-0.718,Negative
+14,gaming,"Battery drains fast when gaming, and the phone overheats",-0.718,Negative
+14,overheat,"Battery drains fast when gaming, and the phone overheats",-0.718,Negative
+15,camera,"The camera takes stunning photos, even at night",0.382,Positive
+16,delivery,Delivery was quick and the packaging was neat,0.67,Positive
+16,packaging,Delivery was quick and the packaging was neat,0.67,Positive
+17,customer service,"Poor customer service, nobody replied to my emails",-0.477,Negative
+17,email,"Poor customer service, nobody replied to my emails",-0.477,Negative
+18,design,Design is sleek and the screen looks beautiful,0.796,Positive
+18,screen,Design is sleek and the screen looks beautiful,0.796,Positive
+19,price,The price is affordable and the battery is excellent,0.802,Positive
+19,battery,The price is affordable and the battery is excellent,0.802,Positive
+20,sound,"Speaker quality is bad, audio is muffled at high volume",-0.758,Negative
+20,build quality,"Speaker quality is bad, audio is muffled at high volume",-0.758,Negative
+20,volume,"Speaker quality is bad, audio is muffled at high volume",-0.758,Negative
+21,storage,Storage is plenty,0.0,Neutral
+21,software,the software is laggy,-0.542,Negative
+22,delivery,Fast delivery,0.361,Positive
+22,screen,the screen has a dim display outdoors,-0.361,Negative
+23,build quality,The build feels flimsy and cheap,-0.542,Negative
+24,camera,"Love the camera and the display, highly recommend",0.79,Positive
+24,screen,"Love the camera and the display, highly recommend",0.79,Positive
+25,battery,"Battery life is awful, I have to charge it twice a day",-0.459,Negative
+26,sound,"Great sound, great screen, great price",0.923,Positive
+26,screen,"Great sound, great screen, great price",0.923,Positive
+26,price,"Great sound, great screen, great price",0.923,Positive
+27,software,The software crashes often and the app is unresponsive,-0.542,Negative
+28,camera,Camera is decent,0.0,Neutral
+28,battery,the battery is disappointing,-0.494,Negative
+29,delivery,"Delivery was delayed by a week, very disappointed",-0.75,Negative
+30,performance,Performance is snappy and multitasking is smooth,0.772,Positive
+31,packaging,Packaging was excellent and the delivery was on time,0.572,Positive
+31,delivery,Packaging was excellent and the delivery was on time,0.572,Positive
+32,price,The price is too high for such an average camera,0.0,Neutral
+32,camera,The price is too high for such an average camera,0.0,Neutral
+33,battery,the battery lasts long,0.361,Positive
+34,design,Beautiful design and a sturdy build,0.813,Positive
+34,build quality,Beautiful design and a sturdy build,0.813,Positive
+35,customer service,Customer support was rude and unhelpful,-0.077,Negative
+36,screen,"The screen is crisp, the sound is rich, and the price is fair",0.856,Positive
+36,sound,"The screen is crisp, the sound is rich, and the price is fair",0.856,Positive
+36,price,"The screen is crisp, the sound is rich, and the price is fair",0.856,Positive
+37,performance,Heats up quickly and the performance drops,0.0,Neutral
+38,price,"Good value, the battery performance is impressive",0.823,Positive
+38,battery,"Good value, the battery performance is impressive",0.823,Positive
+38,performance,"Good value, the battery performance is impressive",0.823,Positive
+39,camera,The camera is fantastic in daylight,0.557,Positive
+39,daylight,The camera is fantastic in daylight,0.557,Positive
+40,storage,Storage fills up fast,0.361,Positive
+40,screen,the display is wonderful,0.572,Positive

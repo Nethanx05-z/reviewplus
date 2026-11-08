@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReviewPulse - Aspect-Based Sentiment Analysis (ABSA)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+    }
+    .gradient-hero {
+      background: radial-gradient(circle at 10% 20%, rgba(30, 58, 138, 0.05) 0%, rgba(13, 148, 136, 0.05) 90%);
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- Navigation Bar -->
+  <header class="bg-white/80 backdrop-blur sticky top-0 z-50 border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-700 to-teal-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+          <i class="fa-solid fa-chart-pie text-lg"></i>
+        </div>
+        <div>
+          <span class="text-xl font-bold bg-gradient-to-r from-blue-900 to-teal-600 bg-clip-text text-transparent">ReviewPulse</span>
+          <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 ml-2">ABSA v2.0</span>
+        </div>
+      </div>
+      <div class="flex items-center space-x-4">
+        <a href="https://github.com/Nethanx05-z/ReviewPulse" target="_blank" class="inline-flex items-center space-x-2 text-sm font-medium text-slate-600 hover:text-blue-600 transition">
+          <i class="fa-brands fa-github text-lg"></i>
+          <span class="hidden sm:inline">GitHub</span>
+        </a>
+        <a href="https://github.com/Nethanx05-z/ReviewPulse/blob/main/ReviewPulse_Project_Report_With_Screenshots.pdf" target="_blank" class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 text-sm font-semibold transition border border-blue-200">
+          <i class="fa-solid fa-file-pdf"></i>
+          <span>PDF Report</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+    <div class="mb-8">
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">Aspect-Based Sentiment Analysis</h1>
+      <p class="text-slate-600 mt-2 max-w-3xl text-sm sm:text-base">
+        Dissect customer reviews into granular physical attributes (<em>battery, camera, display, price, performance</em>). Extract feature-level polarity scores and discover exact product strengths and vulnerabilities.
+      </p>
+    </div>
+
+    <!-- Input Control Card -->
+    <div class="glass-card rounded-2xl p-6 shadow-sm mb-8">
+      <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4 mb-5">
+        <div class="flex space-x-2" role="tablist">
+          <button id="tabSample" onclick="switchTab('sample')" class="tab-btn px-4 py-2 rounded-lg text-sm font-semibold transition bg-blue-600 text-white shadow-sm">
+            <i class="fa-solid fa-flask mr-1.5"></i> Benchmark Sample Data
+          </button>
+          <button id="tabPaste" onclick="switchTab('paste')" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition">
+            <i class="fa-solid fa-align-left mr-1.5"></i> Paste Raw Text
+          </button>
+          <button id="tabUpload" onclick="switchTab('upload')" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition">
+            <i class="fa-solid fa-upload mr-1.5"></i> Upload CSV
+          </button>
+        </div>
+        <div class="flex items-center space-x-3">
+          <label class="text-xs font-semibold uppercase text-slate-500 tracking-wider">Mention Sensitivity:</label>
+          <input type="range" id="thresholdSlider" min="1" max="10" value="2" class="w-28 accent-blue-600 cursor-pointer" oninput="document.getElementById('thresholdVal').innerText = this.value">
+          <span id="thresholdVal" class="text-sm font-bold bg-slate-100 px-2.5 py-0.5 rounded-md text-blue-700">2</span>
+        </div>
+      </div>
+
+      <!-- Tab: Sample Data -->
+      <div id="contentSample" class="tab-content">
+        <p class="text-sm text-slate-600 mb-3">Load verified smartphone and hardware benchmark reviews with mixed opinions:</p>
+        <div class="flex flex-wrap gap-3">
+          <button onclick="loadSample(40)" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-sm font-medium transition flex items-center space-x-2 border border-slate-200">
+            <i class="fa-solid fa-mobile-screen-button text-blue-600"></i>
+            <span>Load 40 Smartphone Reviews</span>
+          </button>
+          <button onclick="loadSample(10)" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-sm font-medium transition flex items-center space-x-2 border border-slate-200">
+            <i class="fa-solid fa-laptop text-teal-600"></i>
+            <span>Quick 10-Review Mixed Batch</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Tab: Paste Text -->
+      <div id="contentPaste" class="tab-content hidden">
+        <label class="block text-sm font-medium text-slate-700 mb-1">Paste customer reviews (one review per line):</label>
+        <textarea id="pasteInput" rows="5" class="w-full rounded-xl border border-slate-300 p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="The battery easily lasts two days, but the camera is blurry in low light.&#10;Display is super bright, but customer service was awful."></textarea>
+      </div>
+
+      <!-- Tab: Upload CSV -->
+      <div id="contentUpload" class="tab-content hidden">
+        <div class="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:border-blue-500 transition cursor-pointer" onclick="document.getElementById('csvFileInput').click()">
+          <i class="fa-solid fa-file-csv text-3xl text-blue-600 mb-2"></i>
+          <p class="text-sm font-medium text-slate-700">Click to upload CSV dataset (Amazon, Flipkart, etc.)</p>
+          <p class="text-xs text-slate-400 mt-1">Automatic column detection for 'review', 'comment', or 'segment'</p>
+          <input type="file" id="csvFileInput" accept=".csv" class="hidden" onchange="handleCsvUpload(event)">
+        </div>
+        <p id="csvStatus" class="text-xs font-semibold text-emerald-600 mt-2 hidden"></p>
+      </div>
+
+      <div class="mt-6 flex justify-end">
+        <button id="analyzeBtn" onclick="runAnalysis()" class="px-6 py-2.5 bg-gradient-to-r from-blue-700 to-teal-600 hover:from-blue-800 hover:to-teal-700 text-white font-semibold text-sm rounded-xl shadow-lg shadow-blue-600/20 transition flex items-center space-x-2">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span>Run Aspect-Based Analysis</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loading" class="hidden py-12 text-center">
+      <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-blue-600 border-t-transparent"></div>
+      <p class="text-sm font-medium text-slate-600 mt-3">Splitting contrast clauses & scoring polarity...</p>
+    </div>
+
+    <!-- Results Section -->
+    <div id="results" class="hidden space-y-8">
+
+      <!-- KPI Metrics Row -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="glass-card rounded-xl p-5 border-l-4 border-l-blue-600 shadow-sm">
+          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Reviews Analysed</span>
+          <p id="kpiReviews" class="text-3xl font-extrabold text-slate-900 mt-1">0</p>
+          <span class="text-xs text-slate-500">100% Ingested</span>
+        </div>
+        <div class="glass-card rounded-xl p-5 border-l-4 border-l-teal-600 shadow-sm">
+          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Aspects Found</span>
+          <p id="kpiAspects" class="text-3xl font-extrabold text-slate-900 mt-1">0</p>
+          <span class="text-xs text-slate-500">Above mention threshold</span>
+        </div>
+        <div class="glass-card rounded-xl p-5 border-l-4 border-l-emerald-600 shadow-sm">
+          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Overall Positive</span>
+          <p id="kpiPositive" class="text-3xl font-extrabold text-slate-900 mt-1">0%</p>
+          <span class="text-xs text-slate-500">Positive opinion clauses</span>
+        </div>
+        <div class="glass-card rounded-xl p-5 border-l-4 border-l-indigo-600 shadow-sm">
+          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Avg Polarity Score</span>
+          <p id="kpiAvgScore" class="text-3xl font-extrabold text-slate-900 mt-1">+0.00</p>
+          <span class="text-xs text-slate-500">-1.0 (Neg) to +1.0 (Pos)</span>
+        </div>
+      </div>
+
+      <!-- Natural Language Summary Banner -->
+      <div class="bg-gradient-to-r from-blue-900 to-indigo-900 text-white rounded-2xl p-6 shadow-md">
+        <div class="flex items-start space-x-3">
+          <i class="fa-solid fa-sparkles text-xl text-teal-300 mt-0.5"></i>
+          <div>
+            <h3 class="text-xs font-bold tracking-wider uppercase text-teal-300">Automated Executive Summary</h3>
+            <p id="summaryText" class="text-base sm:text-lg font-medium mt-1 leading-snug">Analyzing...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="glass-card rounded-2xl p-6 shadow-sm">
+          <h3 class="text-base font-bold text-slate-900 mb-4 flex items-center justify-between">
+            <span>Sentiment Volume by Aspect</span>
+            <span class="text-xs font-normal text-slate-400">Positive / Neutral / Negative</span>
+          </h3>
+          <div class="h-72">
+            <canvas id="chartDistribution"></canvas>
+          </div>
+        </div>
+        <div class="glass-card rounded-2xl p-6 shadow-sm">
+          <h3 class="text-base font-bold text-slate-900 mb-4 flex items-center justify-between">
+            <span>Ranked Average Score per Aspect</span>
+            <span class="text-xs font-normal text-slate-400">Green = Good, Red = Poor</span>
+          </h3>
+          <div class="h-72">
+            <canvas id="chartRanked"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Aspect Verdicts Table -->
+      <div class="glass-card rounded-2xl p-6 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-bold text-slate-900">Aspect Verdicts & Breakdown</h3>
+          <button onclick="exportCSV()" class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold text-slate-600 hover:bg-slate-100 transition flex items-center space-x-1.5">
+            <i class="fa-solid fa-download"></i>
+            <span>Export CSV</span>
+          </button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm text-slate-600">
+            <thead class="bg-slate-100 text-xs uppercase font-semibold text-slate-700">
+              <tr>
+                <th class="px-4 py-3 rounded-l-lg">Aspect</th>
+                <th class="px-3 py-3 text-center">Positive</th>
+                <th class="px-3 py-3 text-center">Negative</th>
+                <th class="px-3 py-3 text-center">Neutral</th>
+                <th class="px-3 py-3 text-center">Total Mentions</th>
+                <th class="px-3 py-3 text-right">Avg Score</th>
+                <th class="px-4 py-3 text-center rounded-r-lg">Verdict</th>
+              </tr>
+            </thead>
+            <tbody id="verdictTableBody" class="divide-y divide-slate-100">
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Verbatim Drill-Down Table -->
+      <div class="glass-card rounded-2xl p-6 shadow-sm">
+        <h3 class="text-lg font-bold text-slate-900 mb-2">Verbatim Customer Quotes & Segment Audit</h3>
+        <p class="text-xs text-slate-500 mb-4">Every aggregated metric is directly traceable back to customer clauses:</p>
+        <div class="overflow-x-auto max-h-96">
+          <table class="w-full text-left text-xs text-slate-600">
+            <thead class="bg-slate-100 uppercase font-semibold text-slate-700 sticky top-0">
+              <tr>
+                <th class="px-3 py-2 w-16">ID</th>
+                <th class="px-3 py-2 w-28">Aspect</th>
+                <th class="px-4 py-2">Customer Review Segment</th>
+                <th class="px-3 py-2 w-20 text-right">Score</th>
+                <th class="px-3 py-2 w-24 text-center">Sentiment</th>
+              </tr>
+            </thead>
+            <tbody id="drillDownTableBody" class="divide-y divide-slate-100">
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 py-6 mt-12 text-center text-xs text-slate-500">
+    <p>ReviewPulse &copy; 2026 | Aspect-Based Sentiment Analysis | Built with Python, VADER & Streamlit / Vercel Serverless</p>
+  </footer>
+
+  <script>
+    let activeReviews = [];
+    let distributionChart = null;
+    let rankedChart = null;
+    let currentResults = null;
+
+    const sampleReviews40 = [
+      "The battery easily lasts two days, but the camera is blurry in low light.",
+      "Display is super bright and vibrant! However, customer service was awful.",
+      "Great price for the specs. Build quality feels a bit cheap though.",
+      "Speakers are loud and crisp. Battery drains very quickly while gaming.",
+      "Fast delivery by courier. Software is full of bugs and bloatware.",
+      "I love the design and camera daylight photos. But it overheats when charging.",
+      "Screen is sharp and responsive. Performance lags when switching between apps.",
+      "Unresponsive touch screen and terrible customer support. Returning it.",
+      "Affordable price and sturdy metal chassis. Worth every penny.",
+      "Battery life is amazing! Sound is tinny at high volume.",
+      "Delivery was prompt and packaging was intact.",
+      "Performance is exceptionally smooth with Snapdragon chip.",
+      "The price is unbeatable for an OLED screen, but camera lacks optical stabilization.",
+      "Customer service replaced my defective unit in two days. Outstanding support!",
+      "Software updates keep crashing the phone. Very frustrating.",
+      "Camera takes stunning portrait shots. Battery standby time is disappointing.",
+      "Build quality is solid titanium, yet sound volume is surprisingly weak.",
+      "Screen colors are washed out and price is way too high.",
+      "Fast charging gets to 80% in 20 minutes! Great battery engineering.",
+      "Software UI is clean without any bloatware. Snappy performance."
+    ];
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-blue-600', 'text-white', 'shadow-sm');
+        btn.classList.add('text-slate-600');
+      });
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+
+      if (tab === 'sample') {
+        document.getElementById('tabSample').classList.add('bg-blue-600', 'text-white', 'shadow-sm');
+        document.getElementById('contentSample').classList.remove('hidden');
+      } else if (tab === 'paste') {
+        document.getElementById('tabPaste').classList.add('bg-blue-600', 'text-white', 'shadow-sm');
+        document.getElementById('contentPaste').classList.remove('hidden');
+      } else if (tab === 'upload') {
+        document.getElementById('tabUpload').classList.add('bg-blue-600', 'text-white', 'shadow-sm');
+        document.getElementById('contentUpload').classList.remove('hidden');
+      }
+    }
+
+    function loadSample(count) {
+      activeReviews = count === 40 ? sampleReviews40 : sampleReviews40.slice(0, 10);
+      runAnalysis();
+    }
+
+    function handleCsvUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const text = event.target.result;
+        const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+        if (lines.length <= 1) return;
+        
+        // Header detection
+        const header = lines[0].toLowerCase();
+        let targetCol = 0;
+        const cols = lines[0].split(',');
+        cols.forEach((c, idx) => {
+          const colClean = c.toLowerCase().replace(/["']/g, '').trim();
+          if (['review', 'review_text', 'text', 'comment', 'segment'].includes(colClean)) {
+            targetCol = idx;
+          }
+        });
+
+        activeReviews = [];
+        for (let i = 1; i < lines.length; i++) {
+          const row = lines[i].split(',');
+          if (row[targetCol]) {
+            activeReviews.push(row[targetCol].replace(/["']/g, '').trim());
+          }
+        }
+        document.getElementById('csvStatus').innerText = `✓ Loaded ${activeReviews.length} reviews from CSV`;
+        document.getElementById('csvStatus').classList.remove('hidden');
+        runAnalysis();
+      };
+      reader.readAsText(file);
+    }
+
+    async function runAnalysis() {
+      // If paste tab active and has text
+      if (!document.getElementById('contentPaste').classList.contains('hidden')) {
+        const pasted = document.getElementById('pasteInput').value.trim();
+        if (pasted) {
+          activeReviews = pasted.split('\n').map(l => l.trim()).filter(l => l.length > 3);
+        }
+      }
+
+      if (activeReviews.length === 0) {
+        activeReviews = sampleReviews40;
+      }
+
+      const threshold = parseInt(document.getElementById('thresholdSlider').value) || 2;
+      document.getElementById('loading').classList.remove('hidden');
+      document.getElementById('results').classList.add('hidden');
+
+      try {
+        const res = await fetch('/api/index', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            reviews: activeReviews,
+            min_mentions: threshold
+          })
+        });
+        const data = await res.json();
+        currentResults = data;
+        renderResults(data);
+      } catch (err) {
+        console.error("API error, using local fallback", err);
+        // Fallback simulation if running purely statically
+        renderLocalFallback(threshold);
+      } finally {
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('results').classList.remove('hidden');
+      }
+    }
+
+    function renderResults(data) {
+      document.getElementById('kpiReviews').innerText = data.stats.total_reviews;
+      document.getElementById('kpiAspects').innerText = data.stats.total_aspects;
+      document.getElementById('kpiPositive').innerText = data.stats.positive_pct + '%';
+      document.getElementById('kpiAvgScore').innerText = (data.stats.avg_score >= 0 ? '+' : '') + data.stats.avg_score.toFixed(2);
+      document.getElementById('summaryText').innerText = data.summary_text;
+
+      // Render Verdicts Table
+      const tBody = document.getElementById('verdictTableBody');
+      tBody.innerHTML = '';
+      data.aspects.forEach(asp => {
+        const vBadge = asp.verdict === 'Good' 
+          ? '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">Good</span>'
+          : asp.verdict === 'Poor'
+          ? '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800">Poor</span>'
+          : '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">Mixed</span>';
+
+        const row = `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="px-4 py-3 font-bold text-slate-900 capitalize">${asp.aspect}</td>
+            <td class="px-3 py-3 text-center text-emerald-600 font-semibold">${asp.Positive}</td>
+            <td class="px-3 py-3 text-center text-rose-600 font-semibold">${asp.Negative}</td>
+            <td class="px-3 py-3 text-center text-slate-400">${asp.Neutral}</td>
+            <td class="px-3 py-3 text-center font-bold text-slate-800">${asp.mentions}</td>
+            <td class="px-3 py-3 text-right font-mono font-semibold ${asp.avg_score >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${(asp.avg_score >= 0 ? '+' : '') + asp.avg_score.toFixed(3)}</td>
+            <td class="px-4 py-3 text-center">${vBadge}</td>
+          </tr>
+        `;
+        tBody.insertAdjacentHTML('beforeend', row);
+      });
+
+      // Render Drill-Down
+      const dBody = document.getElementById('drillDownTableBody');
+      dBody.innerHTML = '';
+      data.details.forEach(d => {
+        const sColor = d.sentiment === 'Positive' ? 'text-emerald-700 bg-emerald-50' : d.sentiment === 'Negative' ? 'text-rose-700 bg-rose-50' : 'text-slate-600 bg-slate-100';
+        const row = `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="px-3 py-2 text-slate-400 font-mono">#${d.review_id}</td>
+            <td class="px-3 py-2 font-semibold text-slate-800 capitalize">${d.aspect}</td>
+            <td class="px-4 py-2 text-slate-700 italic">"${d.segment}"</td>
+            <td class="px-3 py-2 text-right font-mono font-medium">${d.score >= 0 ? '+' : ''}${d.score.toFixed(2)}</td>
+            <td class="px-3 py-2 text-center"><span class="px-2 py-0.5 rounded text-[11px] font-semibold ${sColor}">${d.sentiment}</span></td>
+          </tr>
+        `;
+        dBody.insertAdjacentHTML('beforeend', row);
+      });
+
+      // Render Charts
+      renderCharts(data.aspects);
+    }
+
+    function renderCharts(aspects) {
+      const labels = aspects.map(a => a.aspect.toUpperCase());
+      const posData = aspects.map(a => a.Positive);
+      const neuData = aspects.map(a => a.Neutral);
+      const negData = aspects.map(a => a.Negative);
+      const scores = aspects.map(a => a.avg_score);
+
+      if (distributionChart) distributionChart.destroy();
+      const ctxDist = document.getElementById('chartDistribution').getContext('2d');
+      distributionChart = new Chart(ctxDist, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            { label: 'Positive', data: posData, backgroundColor: '#10b981' },
+            { label: 'Neutral', data: neuData, backgroundColor: '#94a3b8' },
+            { label: 'Negative', data: negData, backgroundColor: '#f43f5e' }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { stacked: true },
+            y: { stacked: true, beginAtZero: true }
+          }
+        }
+      });
+
+      // Sort for Ranked Chart
+      const rankedSorted = [...aspects].sort((a,b) => b.avg_score - a.avg_score);
+      const rankedLabels = rankedSorted.map(a => a.aspect.toUpperCase());
+      const rankedScores = rankedSorted.map(a => a.avg_score);
+      const rankedColors = rankedScores.map(s => s >= 0.2 ? '#10b981' : s <= -0.1 ? '#f43f5e' : '#f59e0b');
+
+      if (rankedChart) rankedChart.destroy();
+      const ctxRank = document.getElementById('chartRanked').getContext('2d');
+      rankedChart = new Chart(ctxRank, {
+        type: 'bar',
+        data: {
+          labels: rankedLabels,
+          datasets: [{
+            label: 'Avg Polarity Score',
+            data: rankedScores,
+            backgroundColor: rankedColors,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { min: -1.0, max: 1.0 }
+          }
+        }
+      });
+    }
+
+    function exportCSV() {
+      if (!currentResults || !currentResults.aspects) return;
+      let csv = 'aspect,Positive,Negative,Neutral,mentions,avg_score,verdict\n';
+      currentResults.aspects.forEach(a => {
+        csv += `${a.aspect},${a.Positive},${a.Negative},${a.Neutral},${a.mentions},${a.avg_score},${a.verdict}\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'reviewpulse_aspect_summary.csv';
+      a.click();
+    }
+
+    // Auto-run benchmark on first page load
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSample(40);
+    });
+  </script>
+</body>
+</html>
